@@ -1,0 +1,2137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="./src/style/output.css" />
+  </head>
+
+  <body>
+    <h1 class="heading">TimeZone to Region Code</h1>
+    <form>
+      <input
+        type="text"
+        id="input"
+        placeholder="Enter TimeZone"
+        onkeyup="checkDirty()"
+      />
+      <div class="input-container">
+        <input
+          type="checkbox"
+          onchange="setTimeZone(true)"
+          name="automatic"
+          id="checkbox"
+        />
+		<label for="checkbox">Automatic</label>
+        <button type="button" class="btn" onclick="getRegionCode()">
+          Get Region Code
+        </button>
+      </div>
+    </form>
+
+    <div class="output">
+      <div class="timeZoneContainer">
+        Time Zone : <span class="timeZone">...</span>
+      </div>
+      <div class="regionCodeContainer">
+        Region Code (Country Name) :
+        <div class="regionCodes">...</div>
+      </div>
+      <p class="postScript">Few timezones are used by multiple countries</p>
+      <p class="error"></p>
+    </div>
+
+    <script>
+      const countries = {
+        AD: "Andorra",
+        AE: "United Arab Emirates",
+        AF: "Afghanistan",
+        AG: "Antigua and Barbuda",
+        AI: "Anguilla",
+        AL: "Albania",
+        AM: "Armenia",
+        AO: "Angola",
+        AQ: "Antarctica",
+        AR: "Argentina",
+        AS: "American Samoa",
+        AT: "Austria",
+        AU: "Australia",
+        AW: "Aruba",
+        AX: "Åland Islands",
+        AZ: "Azerbaijan",
+        BA: "Bosnia and Herzegovina",
+        BB: "Barbados",
+        BD: "Bangladesh",
+        BE: "Belgium",
+        BF: "Burkina Faso",
+        BG: "Bulgaria",
+        BH: "Bahrain",
+        BI: "Burundi",
+        BJ: "Benin",
+        BL: "Saint Barthélemy",
+        BM: "Bermuda",
+        BN: "Brunei",
+        BO: "Bolivia",
+        BQ: "Caribbean Netherlands",
+        BR: "Brazil",
+        BS: "Bahamas",
+        BT: "Bhutan",
+        BV: "Bouvet Island",
+        BW: "Botswana",
+        BY: "Belarus",
+        BZ: "Belize",
+        CA: "Canada",
+        CC: "Cocos Islands",
+        CD: "Democratic Republic of the Congo",
+        CF: "Central African Republic",
+        CG: "Republic of the Congo",
+        CH: "Switzerland",
+        CI: "Ivory Coast",
+        CK: "Cook Islands",
+        CL: "Chile",
+        CM: "Cameroon",
+        CN: "China",
+        CO: "Colombia",
+        CR: "Costa Rica",
+        CU: "Cuba",
+        CV: "Cabo Verde",
+        CW: "Curaçao",
+        CX: "Christmas Island",
+        CY: "Cyprus",
+        CZ: "Czechia",
+        DE: "Germany",
+        DJ: "Djibouti",
+        DK: "Denmark",
+        DM: "Dominica",
+        DO: "Dominican Republic",
+        DZ: "Algeria",
+        EC: "Ecuador",
+        EE: "Estonia",
+        EG: "Egypt",
+        EH: "Western Sahara",
+        ER: "Eritrea",
+        ES: "Spain",
+        ET: "Ethiopia",
+        FI: "Finland",
+        FJ: "Fiji",
+        FK: "Falkland Islands",
+        FM: "Micronesia",
+        FO: "Faroe Islands",
+        FR: "France",
+        GA: "Gabon",
+        GB: "United Kingdom",
+        GD: "Grenada",
+        GE: "Georgia",
+        GF: "French Guiana",
+        GG: "Guernsey",
+        GH: "Ghana",
+        GI: "Gibraltar",
+        GL: "Greenland",
+        GM: "Gambia",
+        GN: "Guinea",
+        GP: "Guadeloupe",
+        GQ: "Equatorial Guinea",
+        GR: "Greece",
+        GS: "South Georgia and the South Sandwich Islands",
+        GT: "Guatemala",
+        GU: "Guam",
+        GW: "Guinea-Bissau",
+        GY: "Guyana",
+        HK: "Hong Kong",
+        HM: "Heard Island and McDonald Islands",
+        HN: "Honduras",
+        HR: "Croatia",
+        HT: "Haiti",
+        HU: "Hungary",
+        ID: "Indonesia",
+        IE: "Ireland",
+        IL: "Israel",
+        IM: "Isle of Man",
+        IN: "India",
+        IO: "British Indian Ocean Territory",
+        IQ: "Iraq",
+        IR: "Iran",
+        IS: "Iceland",
+        IT: "Italy",
+        JE: "Jersey",
+        JM: "Jamaica",
+        JO: "Jordan",
+        JP: "Japan",
+        KE: "Kenya",
+        KG: "Kyrgyzstan",
+        KH: "Cambodia",
+        KI: "Kiribati",
+        KM: "Comoros",
+        KN: "Saint Kitts and Nevis",
+        KP: "North Korea",
+        KR: "South Korea",
+        KW: "Kuwait",
+        KY: "Cayman Islands",
+        KZ: "Kazakhstan",
+        LA: "Laos",
+        LB: "Lebanon",
+        LC: "Saint Lucia",
+        LI: "Liechtenstein",
+        LK: "Sri Lanka",
+        LR: "Liberia",
+        LS: "Lesotho",
+        LT: "Lithuania",
+        LU: "Luxembourg",
+        LV: "Latvia",
+        LY: "Libya",
+        MA: "Morocco",
+        MC: "Monaco",
+        MD: "Moldova",
+        ME: "Montenegro",
+        MF: "Saint Martin",
+        MG: "Madagascar",
+        MH: "Marshall Islands",
+        MK: "North Macedonia",
+        ML: "Mali",
+        MM: "Myanmar",
+        MN: "Mongolia",
+        MO: "Macao",
+        MP: "Northern Mariana Islands",
+        MQ: "Martinique",
+        MR: "Mauritania",
+        MS: "Montserrat",
+        MT: "Malta",
+        MU: "Mauritius",
+        MV: "Maldives",
+        MW: "Malawi",
+        MX: "Mexico",
+        MY: "Malaysia",
+        MZ: "Mozambique",
+        NA: "Namibia",
+        NC: "New Caledonia",
+        NE: "Niger",
+        NF: "Norfolk Island",
+        NG: "Nigeria",
+        NI: "Nicaragua",
+        NL: "Netherlands",
+        NO: "Norway",
+        NP: "Nepal",
+        NR: "Nauru",
+        NU: "Niue",
+        NZ: "New Zealand",
+        OM: "Oman",
+        PA: "Panama",
+        PE: "Peru",
+        PF: "French Polynesia",
+        PG: "Papua New Guinea",
+        PH: "Philippines",
+        PK: "Pakistan",
+        PL: "Poland",
+        PM: "Saint Pierre and Miquelon",
+        PN: "Pitcairn",
+        PR: "Puerto Rico",
+        PS: "Palestine",
+        PT: "Portugal",
+        PW: "Palau",
+        PY: "Paraguay",
+        QA: "Qatar",
+        RE: "Réunion",
+        RO: "Romania",
+        RS: "Serbia",
+        RU: "Russia",
+        RW: "Rwanda",
+        SA: "Saudi Arabia",
+        SB: "Solomon Islands",
+        SC: "Seychelles",
+        SD: "Sudan",
+        SE: "Sweden",
+        SG: "Singapore",
+        SH: "Saint Helena, Ascension and Tristan da Cunha",
+        SI: "Slovenia",
+        SJ: "Svalbard and Jan Mayen",
+        SK: "Slovakia",
+        SL: "Sierra Leone",
+        SM: "San Marino",
+        SN: "Senegal",
+        SO: "Somalia",
+        SR: "Suriname",
+        SS: "South Sudan",
+        ST: "Sao Tome and Principe",
+        SV: "El Salvador",
+        SX: "Sint Maarten",
+        SY: "Syria",
+        SZ: "Eswatini",
+        TC: "Turks and Caicos Islands",
+        TD: "Chad",
+        TF: "French Southern Territories",
+        TG: "Togo",
+        TH: "Thailand",
+        TJ: "Tajikistan",
+        TK: "Tokelau",
+        TL: "Timor-Leste",
+        TM: "Turkmenistan",
+        TN: "Tunisia",
+        TO: "Tonga",
+        TR: "Turkey",
+        TT: "Trinidad and Tobago",
+        TV: "Tuvalu",
+        TW: "Taiwan",
+        TZ: "Tanzania",
+        UA: "Ukraine",
+        UG: "Uganda",
+        UM: "United States Minor Outlying Islands",
+        US: "United States of America",
+        UY: "Uruguay",
+        UZ: "Uzbekistan",
+        VA: "Holy See",
+        VC: "Saint Vincent and the Grenadines",
+        VE: "Venezuela",
+        VG: "Virgin Islands (UK)",
+        VI: "Virgin Islands (US)",
+        VN: "Vietnam",
+        VU: "Vanuatu",
+        WF: "Wallis and Futuna",
+        WS: "Samoa",
+        YE: "Yemen",
+        YT: "Mayotte",
+        ZA: "South Africa",
+        ZM: "Zambia",
+        ZW: "Zimbabwe",
+      };
+      const timezonesMap = {
+        "Africa/Abidjan": {
+          regionCodes: [
+            "CI",
+            "BF",
+            "GH",
+            "GM",
+            "GN",
+            "ML",
+            "MR",
+            "SH",
+            "SL",
+            "SN",
+            "TG",
+          ],
+        },
+        "Africa/Accra": {
+          alias: "Africa/Abidjan",
+          regionCodes: ["GH"],
+        },
+        "Africa/Addis_Ababa": {
+          alias: "Africa/Nairobi",
+          regionCodes: ["ET"],
+        },
+        "Africa/Algiers": {
+          regionCodes: ["DZ"],
+        },
+        "Africa/Asmara": {
+          alias: "Africa/Nairobi",
+          regionCodes: ["ER"],
+        },
+        "Africa/Asmera": {
+          alias: "Africa/Nairobi",
+          regionCodes: ["ER"],
+        },
+        "Africa/Bamako": {
+          alias: "Africa/Abidjan",
+          regionCodes: ["ML"],
+        },
+        "Africa/Bangui": {
+          alias: "Africa/Lagos",
+          regionCodes: ["CF"],
+        },
+        "Africa/Banjul": {
+          alias: "Africa/Abidjan",
+          regionCodes: ["GM"],
+        },
+        "Africa/Bissau": {
+          regionCodes: ["GW"],
+        },
+        "Africa/Blantyre": {
+          alias: "Africa/Maputo",
+          regionCodes: ["MW"],
+        },
+        "Africa/Brazzaville": {
+          alias: "Africa/Lagos",
+          regionCodes: ["CG"],
+        },
+        "Africa/Bujumbura": {
+          alias: "Africa/Maputo",
+          regionCodes: ["BI"],
+        },
+        "Africa/Cairo": {
+          regionCodes: ["EG"],
+        },
+        "Africa/Casablanca": {
+          regionCodes: ["MA"],
+        },
+        "Africa/Ceuta": {
+          regionCodes: ["ES"],
+        },
+        "Africa/Conakry": {
+          alias: "Africa/Abidjan",
+          regionCodes: ["GN"],
+        },
+        "Africa/Dakar": {
+          alias: "Africa/Abidjan",
+          regionCodes: ["SN"],
+        },
+        "Africa/Dar_es_Salaam": {
+          alias: "Africa/Nairobi",
+          regionCodes: ["TZ"],
+        },
+        "Africa/Djibouti": {
+          alias: "Africa/Nairobi",
+          regionCodes: ["DJ"],
+        },
+        "Africa/Douala": {
+          alias: "Africa/Lagos",
+          regionCodes: ["CM"],
+        },
+        "Africa/El_Aaiun": {
+          regionCodes: ["EH"],
+        },
+        "Africa/Freetown": {
+          alias: "Africa/Abidjan",
+          regionCodes: ["SL"],
+        },
+        "Africa/Gaborone": {
+          alias: "Africa/Maputo",
+          regionCodes: ["BW"],
+        },
+        "Africa/Harare": {
+          alias: "Africa/Maputo",
+          regionCodes: ["ZW"],
+        },
+        "Africa/Johannesburg": {
+          regionCodes: ["ZA", "LS", "SZ"],
+        },
+        "Africa/Juba": {
+          regionCodes: ["SS"],
+        },
+        "Africa/Kampala": {
+          alias: "Africa/Nairobi",
+          regionCodes: ["UG"],
+        },
+        "Africa/Khartoum": {
+          regionCodes: ["SD"],
+        },
+        "Africa/Kigali": {
+          alias: "Africa/Maputo",
+          regionCodes: ["RW"],
+        },
+        "Africa/Kinshasa": {
+          alias: "Africa/Lagos",
+          regionCodes: ["CD"],
+        },
+        "Africa/Lagos": {
+          regionCodes: [
+            "NG",
+            "AO",
+            "BJ",
+            "CD",
+            "CF",
+            "CG",
+            "CM",
+            "GA",
+            "GQ",
+            "NE",
+          ],
+        },
+        "Africa/Libreville": {
+          alias: "Africa/Lagos",
+          regionCodes: ["GA"],
+        },
+        "Africa/Lome": {
+          alias: "Africa/Abidjan",
+          regionCodes: ["TG"],
+        },
+        "Africa/Luanda": {
+          alias: "Africa/Lagos",
+          regionCodes: ["AO"],
+        },
+        "Africa/Lubumbashi": {
+          alias: "Africa/Maputo",
+          regionCodes: ["CD"],
+        },
+        "Africa/Lusaka": {
+          alias: "Africa/Maputo",
+          regionCodes: ["ZM"],
+        },
+        "Africa/Malabo": {
+          alias: "Africa/Lagos",
+          regionCodes: ["GQ"],
+        },
+        "Africa/Maputo": {
+          regionCodes: ["MZ", "BI", "BW", "CD", "MW", "RW", "ZM", "ZW"],
+        },
+        "Africa/Maseru": {
+          alias: "Africa/Johannesburg",
+          regionCodes: ["LS"],
+        },
+        "Africa/Mbabane": {
+          alias: "Africa/Johannesburg",
+          regionCodes: ["SZ"],
+        },
+        "Africa/Mogadishu": {
+          alias: "Africa/Nairobi",
+          regionCodes: ["SO"],
+        },
+        "Africa/Monrovia": {
+          regionCodes: ["LR"],
+        },
+        "Africa/Nairobi": {
+          regionCodes: [
+            "KE",
+            "DJ",
+            "ER",
+            "ET",
+            "KM",
+            "MG",
+            "SO",
+            "TZ",
+            "UG",
+            "YT",
+          ],
+        },
+        "Africa/Ndjamena": {
+          regionCodes: ["TD"],
+        },
+        "Africa/Niamey": {
+          alias: "Africa/Lagos",
+          regionCodes: ["NE"],
+        },
+        "Africa/Nouakchott": {
+          alias: "Africa/Abidjan",
+          regionCodes: ["MR"],
+        },
+        "Africa/Ouagadougou": {
+          alias: "Africa/Abidjan",
+          regionCodes: ["BF"],
+        },
+        "Africa/Porto-Novo": {
+          alias: "Africa/Lagos",
+          regionCodes: ["BJ"],
+        },
+        "Africa/Sao_Tome": {
+          regionCodes: ["ST"],
+        },
+        "Africa/Timbuktu": {
+          alias: "Africa/Abidjan",
+          regionCodes: ["ML"],
+        },
+        "Africa/Tripoli": {
+          regionCodes: ["LY"],
+        },
+        "Africa/Tunis": {
+          regionCodes: ["TN"],
+        },
+        "Africa/Windhoek": {
+          regionCodes: ["NA"],
+        },
+        "America/Adak": {
+          regionCodes: ["US"],
+        },
+        "America/Anchorage": {
+          regionCodes: ["US"],
+        },
+        "America/Anguilla": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["AI"],
+        },
+        "America/Antigua": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["AG"],
+        },
+        "America/Araguaina": {
+          regionCodes: ["BR"],
+        },
+        "America/Argentina/Buenos_Aires": {
+          regionCodes: ["AR"],
+        },
+        "America/Argentina/Catamarca": {
+          regionCodes: ["AR"],
+        },
+        "America/Argentina/ComodRivadavia": {
+          alias: "America/Argentina/Catamarca",
+        },
+        "America/Argentina/Cordoba": {
+          regionCodes: ["AR"],
+        },
+        "America/Argentina/Jujuy": {
+          regionCodes: ["AR"],
+        },
+        "America/Argentina/La_Rioja": {
+          regionCodes: ["AR"],
+        },
+        "America/Argentina/Mendoza": {
+          regionCodes: ["AR"],
+        },
+        "America/Argentina/Rio_Gallegos": {
+          regionCodes: ["AR"],
+        },
+        "America/Argentina/Salta": {
+          regionCodes: ["AR"],
+        },
+        "America/Argentina/San_Juan": {
+          regionCodes: ["AR"],
+        },
+        "America/Argentina/San_Luis": {
+          regionCodes: ["AR"],
+        },
+        "America/Argentina/Tucuman": {
+          regionCodes: ["AR"],
+        },
+        "America/Argentina/Ushuaia": {
+          regionCodes: ["AR"],
+        },
+        "America/Aruba": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["AW"],
+        },
+        "America/Asuncion": {
+          regionCodes: ["PY"],
+        },
+        "America/Atikokan": {
+          alias: "America/Panama",
+          regionCodes: ["CA"],
+        },
+        "America/Atka": {
+          alias: "America/Adak",
+        },
+        "America/Bahia": {
+          regionCodes: ["BR"],
+        },
+        "America/Bahia_Banderas": {
+          regionCodes: ["MX"],
+        },
+        "America/Barbados": {
+          regionCodes: ["BB"],
+        },
+        "America/Belem": {
+          regionCodes: ["BR"],
+        },
+        "America/Belize": {
+          regionCodes: ["BZ"],
+        },
+        "America/Blanc-Sablon": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["CA"],
+        },
+        "America/Boa_Vista": {
+          regionCodes: ["BR"],
+        },
+        "America/Bogota": {
+          regionCodes: ["CO"],
+        },
+        "America/Boise": {
+          regionCodes: ["US"],
+        },
+        "America/Buenos_Aires": {
+          alias: "America/Argentina/Buenos_Aires",
+        },
+        "America/Cambridge_Bay": {
+          regionCodes: ["CA"],
+        },
+        "America/Campo_Grande": {
+          regionCodes: ["BR"],
+        },
+        "America/Cancun": {
+          regionCodes: ["MX"],
+        },
+        "America/Caracas": {
+          regionCodes: ["VE"],
+        },
+        "America/Catamarca": {
+          alias: "America/Argentina/Catamarca",
+        },
+        "America/Cayenne": {
+          regionCodes: ["GF"],
+        },
+        "America/Cayman": {
+          alias: "America/Panama",
+          regionCodes: ["KY"],
+        },
+        "America/Chicago": {
+          regionCodes: ["US"],
+        },
+        "America/Chihuahua": {
+          regionCodes: ["MX"],
+        },
+        "America/Coral_Harbour": {
+          alias: "America/Panama",
+          regionCodes: ["CA"],
+        },
+        "America/Cordoba": {
+          alias: "America/Argentina/Cordoba",
+        },
+        "America/Costa_Rica": {
+          regionCodes: ["CR"],
+        },
+        "America/Creston": {
+          alias: "America/Phoenix",
+          regionCodes: ["CA"],
+        },
+        "America/Cuiaba": {
+          regionCodes: ["BR"],
+        },
+        "America/Curacao": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["CW"],
+        },
+        "America/Danmarkshavn": {
+          regionCodes: ["GL"],
+        },
+        "America/Dawson": {
+          regionCodes: ["CA"],
+        },
+        "America/Dawson_Creek": {
+          regionCodes: ["CA"],
+        },
+        "America/Denver": {
+          regionCodes: ["US"],
+        },
+        "America/Detroit": {
+          regionCodes: ["US"],
+        },
+        "America/Dominica": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["DM"],
+        },
+        "America/Edmonton": {
+          regionCodes: ["CA"],
+        },
+        "America/Eirunepe": {
+          regionCodes: ["BR"],
+        },
+        "America/El_Salvador": {
+          regionCodes: ["SV"],
+        },
+        "America/Ensenada": {
+          alias: "America/Tijuana",
+        },
+        "America/Fort_Nelson": {
+          regionCodes: ["CA"],
+        },
+        "America/Fort_Wayne": {
+          alias: "America/Indiana/Indianapolis",
+        },
+        "America/Fortaleza": {
+          regionCodes: ["BR"],
+        },
+        "America/Glace_Bay": {
+          regionCodes: ["CA"],
+        },
+        "America/Godthab": {
+          alias: "America/Nuuk",
+        },
+        "America/Goose_Bay": {
+          regionCodes: ["CA"],
+        },
+        "America/Grand_Turk": {
+          regionCodes: ["TC"],
+        },
+        "America/Grenada": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["GD"],
+        },
+        "America/Guadeloupe": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["GP"],
+        },
+        "America/Guatemala": {
+          regionCodes: ["GT"],
+        },
+        "America/Guayaquil": {
+          regionCodes: ["EC"],
+        },
+        "America/Guyana": {
+          regionCodes: ["GY"],
+        },
+        "America/Halifax": {
+          regionCodes: ["CA"],
+        },
+        "America/Havana": {
+          regionCodes: ["CU"],
+        },
+        "America/Hermosillo": {
+          regionCodes: ["MX"],
+        },
+        "America/Indiana/Indianapolis": {
+          regionCodes: ["US"],
+        },
+        "America/Indiana/Knox": {
+          regionCodes: ["US"],
+        },
+        "America/Indiana/Marengo": {
+          regionCodes: ["US"],
+        },
+        "America/Indiana/Petersburg": {
+          regionCodes: ["US"],
+        },
+        "America/Indiana/Tell_City": {
+          regionCodes: ["US"],
+        },
+        "America/Indiana/Vevay": {
+          regionCodes: ["US"],
+        },
+        "America/Indiana/Vincennes": {
+          regionCodes: ["US"],
+        },
+        "America/Indiana/Winamac": {
+          regionCodes: ["US"],
+        },
+        "America/Indianapolis": {
+          alias: "America/Indiana/Indianapolis",
+        },
+        "America/Inuvik": {
+          regionCodes: ["CA"],
+        },
+        "America/Iqaluit": {
+          regionCodes: ["CA"],
+        },
+        "America/Jamaica": {
+          regionCodes: ["JM"],
+        },
+        "America/Jujuy": {
+          alias: "America/Argentina/Jujuy",
+        },
+        "America/Juneau": {
+          regionCodes: ["US"],
+        },
+        "America/Kentucky/Louisville": {
+          regionCodes: ["US"],
+        },
+        "America/Kentucky/Monticello": {
+          regionCodes: ["US"],
+        },
+        "America/Knox_IN": {
+          alias: "America/Indiana/Knox",
+        },
+        "America/Kralendijk": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["BQ"],
+        },
+        "America/La_Paz": {
+          regionCodes: ["BO"],
+        },
+        "America/Lima": {
+          regionCodes: ["PE"],
+        },
+        "America/Los_Angeles": {
+          regionCodes: ["US"],
+        },
+        "America/Louisville": {
+          alias: "America/Kentucky/Louisville",
+        },
+        "America/Lower_Princes": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["SX"],
+        },
+        "America/Maceio": {
+          regionCodes: ["BR"],
+        },
+        "America/Managua": {
+          regionCodes: ["NI"],
+        },
+        "America/Manaus": {
+          regionCodes: ["BR"],
+        },
+        "America/Marigot": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["MF"],
+        },
+        "America/Martinique": {
+          regionCodes: ["MQ"],
+        },
+        "America/Matamoros": {
+          regionCodes: ["MX"],
+        },
+        "America/Mazatlan": {
+          regionCodes: ["MX"],
+        },
+        "America/Mendoza": {
+          alias: "America/Argentina/Mendoza",
+        },
+        "America/Menominee": {
+          regionCodes: ["US"],
+        },
+        "America/Merida": {
+          regionCodes: ["MX"],
+        },
+        "America/Metlakatla": {
+          regionCodes: ["US"],
+        },
+        "America/Mexico_City": {
+          regionCodes: ["MX"],
+        },
+        "America/Miquelon": {
+          regionCodes: ["PM"],
+        },
+        "America/Moncton": {
+          regionCodes: ["CA"],
+        },
+        "America/Monterrey": {
+          regionCodes: ["MX"],
+        },
+        "America/Montevideo": {
+          regionCodes: ["UY"],
+        },
+        "America/Montreal": {
+          alias: "America/Toronto",
+          regionCodes: ["CA"],
+        },
+        "America/Montserrat": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["MS"],
+        },
+        "America/Nassau": {
+          alias: "America/Toronto",
+          regionCodes: ["BS"],
+        },
+        "America/New_York": {
+          regionCodes: ["US"],
+        },
+        "America/Nipigon": {
+          regionCodes: ["CA"],
+        },
+        "America/Nome": {
+          regionCodes: ["US"],
+        },
+        "America/Noronha": {
+          regionCodes: ["BR"],
+        },
+        "America/North_Dakota/Beulah": {
+          regionCodes: ["US"],
+        },
+        "America/North_Dakota/Center": {
+          regionCodes: ["US"],
+        },
+        "America/North_Dakota/New_Salem": {
+          regionCodes: ["US"],
+        },
+        "America/Nuuk": {
+          regionCodes: ["GL"],
+        },
+        "America/Ojinaga": {
+          regionCodes: ["MX"],
+        },
+        "America/Panama": {
+          regionCodes: ["PA", "CA", "KY"],
+        },
+        "America/Pangnirtung": {
+          regionCodes: ["CA"],
+        },
+        "America/Paramaribo": {
+          regionCodes: ["SR"],
+        },
+        "America/Phoenix": {
+          regionCodes: ["US", "CA"],
+        },
+        "America/Port-au-Prince": {
+          regionCodes: ["HT"],
+        },
+        "America/Port_of_Spain": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["TT"],
+        },
+        "America/Porto_Acre": {
+          alias: "America/Rio_Branco",
+        },
+        "America/Porto_Velho": {
+          regionCodes: ["BR"],
+        },
+        "America/Puerto_Rico": {
+          regionCodes: [
+            "PR",
+            "AG",
+            "CA",
+            "AI",
+            "AW",
+            "BL",
+            "BQ",
+            "CW",
+            "DM",
+            "GD",
+            "GP",
+            "KN",
+            "LC",
+            "MF",
+            "MS",
+            "SX",
+            "TT",
+            "VC",
+            "VG",
+            "VI",
+          ],
+        },
+        "America/Punta_Arenas": {
+          regionCodes: ["CL"],
+        },
+        "America/Rainy_River": {
+          regionCodes: ["CA"],
+        },
+        "America/Rankin_Inlet": {
+          regionCodes: ["CA"],
+        },
+        "America/Recife": {
+          regionCodes: ["BR"],
+        },
+        "America/Regina": {
+          regionCodes: ["CA"],
+        },
+        "America/Resolute": {
+          regionCodes: ["CA"],
+        },
+        "America/Rio_Branco": {
+          regionCodes: ["BR"],
+        },
+        "America/Rosario": {
+          alias: "America/Argentina/Cordoba",
+        },
+        "America/Santa_Isabel": {
+          alias: "America/Tijuana",
+        },
+        "America/Santarem": {
+          regionCodes: ["BR"],
+        },
+        "America/Santiago": {
+          regionCodes: ["CL"],
+        },
+        "America/Santo_Domingo": {
+          regionCodes: ["DO"],
+        },
+        "America/Sao_Paulo": {
+          regionCodes: ["BR"],
+        },
+        "America/Scoresbysund": {
+          regionCodes: ["GL"],
+        },
+        "America/Shiprock": {
+          alias: "America/Denver",
+        },
+        "America/Sitka": {
+          regionCodes: ["US"],
+        },
+        "America/St_Barthelemy": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["BL"],
+        },
+        "America/St_Johns": {
+          regionCodes: ["CA"],
+        },
+        "America/St_Kitts": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["KN"],
+        },
+        "America/St_Lucia": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["LC"],
+        },
+        "America/St_Thomas": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["VI"],
+        },
+        "America/St_Vincent": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["VC"],
+        },
+        "America/Swift_Current": {
+          regionCodes: ["CA"],
+        },
+        "America/Tegucigalpa": {
+          regionCodes: ["HN"],
+        },
+        "America/Thule": {
+          regionCodes: ["GL"],
+        },
+        "America/Thunder_Bay": {
+          regionCodes: ["CA"],
+        },
+        "America/Tijuana": {
+          regionCodes: ["MX"],
+        },
+        "America/Toronto": {
+          regionCodes: ["CA", "BS"],
+        },
+        "America/Tortola": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["VG"],
+        },
+        "America/Vancouver": {
+          regionCodes: ["CA"],
+        },
+        "America/Virgin": {
+          alias: "America/Puerto_Rico",
+          regionCodes: ["VI"],
+        },
+        "America/Whitehorse": {
+          regionCodes: ["CA"],
+        },
+        "America/Winnipeg": {
+          regionCodes: ["CA"],
+        },
+        "America/Yakutat": {
+          regionCodes: ["US"],
+        },
+        "America/Yellowknife": {
+          regionCodes: ["CA"],
+        },
+        "Antarctica/Casey": {
+          regionCodes: ["AQ"],
+        },
+        "Antarctica/Davis": {
+          regionCodes: ["AQ"],
+        },
+        "Antarctica/DumontDUrville": {
+          alias: "Pacific/Port_Moresby",
+          regionCodes: ["AQ"],
+        },
+        "Antarctica/Macquarie": {
+          regionCodes: ["AU"],
+        },
+        "Antarctica/Mawson": {
+          regionCodes: ["AQ"],
+        },
+        "Antarctica/McMurdo": {
+          alias: "Pacific/Auckland",
+          regionCodes: ["AQ"],
+        },
+        "Antarctica/Palmer": {
+          regionCodes: ["AQ"],
+        },
+        "Antarctica/Rothera": {
+          regionCodes: ["AQ"],
+        },
+        "Antarctica/South_Pole": {
+          alias: "Pacific/Auckland",
+          regionCodes: ["AQ"],
+        },
+        "Antarctica/Syowa": {
+          alias: "Asia/Riyadh",
+          regionCodes: ["AQ"],
+        },
+        "Antarctica/Troll": {
+          regionCodes: ["AQ"],
+        },
+        "Antarctica/Vostok": {
+          regionCodes: ["AQ"],
+        },
+        "Arctic/Longyearbyen": {
+          alias: "Europe/Oslo",
+          regionCodes: ["SJ"],
+        },
+        "Asia/Aden": {
+          alias: "Asia/Riyadh",
+          regionCodes: ["YE"],
+        },
+        "Asia/Almaty": {
+          regionCodes: ["KZ"],
+        },
+        "Asia/Amman": {
+          regionCodes: ["JO"],
+        },
+        "Asia/Anadyr": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Aqtau": {
+          regionCodes: ["KZ"],
+        },
+        "Asia/Aqtobe": {
+          regionCodes: ["KZ"],
+        },
+        "Asia/Ashgabat": {
+          regionCodes: ["TM"],
+        },
+        "Asia/Ashkhabad": {
+          alias: "Asia/Ashgabat",
+        },
+        "Asia/Atyrau": {
+          regionCodes: ["KZ"],
+        },
+        "Asia/Baghdad": {
+          regionCodes: ["IQ"],
+        },
+        "Asia/Bahrain": {
+          alias: "Asia/Qatar",
+          regionCodes: ["BH"],
+        },
+        "Asia/Baku": {
+          regionCodes: ["AZ"],
+        },
+        "Asia/Bangkok": {
+          regionCodes: ["TH", "KH", "LA", "VN"],
+        },
+        "Asia/Barnaul": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Beirut": {
+          regionCodes: ["LB"],
+        },
+        "Asia/Bishkek": {
+          regionCodes: ["KG"],
+        },
+        "Asia/Brunei": {
+          regionCodes: ["BN"],
+        },
+        "Asia/Calcutta": {
+          alias: "Asia/Kolkata",
+        },
+        "Asia/Chita": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Choibalsan": {
+          regionCodes: ["MN"],
+        },
+        "Asia/Chongqing": {
+          alias: "Asia/Shanghai",
+        },
+        "Asia/Chungking": {
+          alias: "Asia/Shanghai",
+        },
+        "Asia/Colombo": {
+          regionCodes: ["LK"],
+        },
+        "Asia/Dacca": {
+          alias: "Asia/Dhaka",
+        },
+        "Asia/Damascus": {
+          regionCodes: ["SY"],
+        },
+        "Asia/Dhaka": {
+          regionCodes: ["BD"],
+        },
+        "Asia/Dili": {
+          regionCodes: ["TL"],
+        },
+        "Asia/Dubai": {
+          regionCodes: ["AE", "OM"],
+        },
+        "Asia/Dushanbe": {
+          regionCodes: ["TJ"],
+        },
+        "Asia/Famagusta": {
+          regionCodes: ["CY"],
+        },
+        "Asia/Gaza": {
+          regionCodes: ["PS"],
+        },
+        "Asia/Harbin": {
+          alias: "Asia/Shanghai",
+        },
+        "Asia/Hebron": {
+          regionCodes: ["PS"],
+        },
+        "Asia/Ho_Chi_Minh": {
+          regionCodes: ["VN"],
+        },
+        "Asia/Hong_Kong": {
+          regionCodes: ["HK"],
+        },
+        "Asia/Hovd": {
+          regionCodes: ["MN"],
+        },
+        "Asia/Irkutsk": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Istanbul": {
+          alias: "Europe/Istanbul",
+        },
+        "Asia/Jakarta": {
+          regionCodes: ["ID"],
+        },
+        "Asia/Jayapura": {
+          regionCodes: ["ID"],
+        },
+        "Asia/Jerusalem": {
+          regionCodes: ["IL"],
+        },
+        "Asia/Kabul": {
+          regionCodes: ["AF"],
+        },
+        "Asia/Kamchatka": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Karachi": {
+          regionCodes: ["PK"],
+        },
+        "Asia/Kashgar": {
+          alias: "Asia/Urumqi",
+        },
+        "Asia/Kathmandu": {
+          regionCodes: ["NP"],
+        },
+        "Asia/Katmandu": {
+          alias: "Asia/Kathmandu",
+        },
+        "Asia/Khandyga": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Kolkata": {
+          regionCodes: ["IN"],
+        },
+        "Asia/Krasnoyarsk": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Kuala_Lumpur": {
+          regionCodes: ["MY"],
+        },
+        "Asia/Kuching": {
+          regionCodes: ["MY"],
+        },
+        "Asia/Kuwait": {
+          alias: "Asia/Riyadh",
+          regionCodes: ["KW"],
+        },
+        "Asia/Macao": {
+          alias: "Asia/Macau",
+        },
+        "Asia/Macau": {
+          regionCodes: ["MO"],
+        },
+        "Asia/Magadan": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Makassar": {
+          regionCodes: ["ID"],
+        },
+        "Asia/Manila": {
+          regionCodes: ["PH"],
+        },
+        "Asia/Muscat": {
+          alias: "Asia/Dubai",
+          regionCodes: ["OM"],
+        },
+        "Asia/Nicosia": {
+          regionCodes: ["CY"],
+        },
+        "Asia/Novokuznetsk": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Novosibirsk": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Omsk": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Oral": {
+          regionCodes: ["KZ"],
+        },
+        "Asia/Phnom_Penh": {
+          alias: "Asia/Bangkok",
+          regionCodes: ["KH"],
+        },
+        "Asia/Pontianak": {
+          regionCodes: ["ID"],
+        },
+        "Asia/Pyongyang": {
+          regionCodes: ["KP"],
+        },
+        "Asia/Qatar": {
+          regionCodes: ["QA", "BH"],
+        },
+        "Asia/Qostanay": {
+          regionCodes: ["KZ"],
+        },
+        "Asia/Qyzylorda": {
+          regionCodes: ["KZ"],
+        },
+        "Asia/Rangoon": {
+          alias: "Asia/Yangon",
+        },
+        "Asia/Riyadh": {
+          regionCodes: ["SA", "AQ", "KW", "YE"],
+        },
+        "Asia/Saigon": {
+          alias: "Asia/Ho_Chi_Minh",
+        },
+        "Asia/Sakhalin": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Samarkand": {
+          regionCodes: ["UZ"],
+        },
+        "Asia/Seoul": {
+          regionCodes: ["KR"],
+        },
+        "Asia/Shanghai": {
+          regionCodes: ["CN"],
+        },
+        "Asia/Singapore": {
+          regionCodes: ["SG", "MY"],
+        },
+        "Asia/Srednekolymsk": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Taipei": {
+          regionCodes: ["TW"],
+        },
+        "Asia/Tashkent": {
+          regionCodes: ["UZ"],
+        },
+        "Asia/Tbilisi": {
+          regionCodes: ["GE"],
+        },
+        "Asia/Tehran": {
+          regionCodes: ["IR"],
+        },
+        "Asia/Tel_Aviv": {
+          alias: "Asia/Jerusalem",
+        },
+        "Asia/Thimbu": {
+          alias: "Asia/Thimphu",
+        },
+        "Asia/Thimphu": {
+          regionCodes: ["BT"],
+        },
+        "Asia/Tokyo": {
+          regionCodes: ["JP"],
+        },
+        "Asia/Tomsk": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Ujung_Pandang": {
+          alias: "Asia/Makassar",
+        },
+        "Asia/Ulaanbaatar": {
+          regionCodes: ["MN"],
+        },
+        "Asia/Ulan_Bator": {
+          alias: "Asia/Ulaanbaatar",
+        },
+        "Asia/Urumqi": {
+          regionCodes: ["CN"],
+        },
+        "Asia/Ust-Nera": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Vientiane": {
+          alias: "Asia/Bangkok",
+          regionCodes: ["LA"],
+        },
+        "Asia/Vladivostok": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Yakutsk": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Yangon": {
+          regionCodes: ["MM"],
+        },
+        "Asia/Yekaterinburg": {
+          regionCodes: ["RU"],
+        },
+        "Asia/Yerevan": {
+          regionCodes: ["AM"],
+        },
+        "Atlantic/Azores": {
+          regionCodes: ["PT"],
+        },
+        "Atlantic/Bermuda": {
+          regionCodes: ["BM"],
+        },
+        "Atlantic/Canary": {
+          regionCodes: ["ES"],
+        },
+        "Atlantic/Cape_Verde": {
+          regionCodes: ["CV"],
+        },
+        "Atlantic/Faeroe": {
+          alias: "Atlantic/Faroe",
+        },
+        "Atlantic/Faroe": {
+          regionCodes: ["FO"],
+        },
+        "Atlantic/Jan_Mayen": {
+          alias: "Europe/Oslo",
+          regionCodes: ["SJ"],
+        },
+        "Atlantic/Madeira": {
+          regionCodes: ["PT"],
+        },
+        "Atlantic/Reykjavik": {
+          regionCodes: ["IS"],
+        },
+        "Atlantic/South_Georgia": {
+          regionCodes: ["GS"],
+        },
+        "Atlantic/St_Helena": {
+          alias: "Africa/Abidjan",
+          regionCodes: ["SH"],
+        },
+        "Atlantic/Stanley": {
+          regionCodes: ["FK"],
+        },
+        "Australia/ACT": {
+          alias: "Australia/Sydney",
+        },
+        "Australia/Adelaide": {
+          regionCodes: ["AU"],
+        },
+        "Australia/Brisbane": {
+          regionCodes: ["AU"],
+        },
+        "Australia/Broken_Hill": {
+          regionCodes: ["AU"],
+        },
+        "Australia/Canberra": {
+          alias: "Australia/Sydney",
+        },
+        "Australia/Currie": {
+          alias: "Australia/Hobart",
+        },
+        "Australia/Darwin": {
+          regionCodes: ["AU"],
+        },
+        "Australia/Eucla": {
+          regionCodes: ["AU"],
+        },
+        "Australia/Hobart": {
+          regionCodes: ["AU"],
+        },
+        "Australia/LHI": {
+          alias: "Australia/Lord_Howe",
+        },
+        "Australia/Lindeman": {
+          regionCodes: ["AU"],
+        },
+        "Australia/Lord_Howe": {
+          regionCodes: ["AU"],
+        },
+        "Australia/Melbourne": {
+          regionCodes: ["AU"],
+        },
+        "Australia/NSW": {
+          alias: "Australia/Sydney",
+        },
+        "Australia/North": {
+          alias: "Australia/Darwin",
+        },
+        "Australia/Perth": {
+          regionCodes: ["AU"],
+        },
+        "Australia/Queensland": {
+          alias: "Australia/Brisbane",
+        },
+        "Australia/South": {
+          alias: "Australia/Adelaide",
+        },
+        "Australia/Sydney": {
+          regionCodes: ["AU"],
+        },
+        "Australia/Tasmania": {
+          alias: "Australia/Hobart",
+        },
+        "Australia/Victoria": {
+          alias: "Australia/Melbourne",
+        },
+        "Australia/West": {
+          alias: "Australia/Perth",
+        },
+        "Australia/Yancowinna": {
+          alias: "Australia/Broken_Hill",
+        },
+        "Brazil/Acre": {
+          alias: "America/Rio_Branco",
+        },
+        "Brazil/DeNoronha": {
+          alias: "America/Noronha",
+        },
+        "Brazil/East": {
+          alias: "America/Sao_Paulo",
+        },
+        "Brazil/West": {
+          alias: "America/Manaus",
+        },
+        "Canada/Atlantic": {
+          alias: "America/Halifax",
+        },
+        "Canada/Central": {
+          alias: "America/Winnipeg",
+        },
+        "Canada/Eastern": {
+          alias: "America/Toronto",
+          regionCodes: ["CA"],
+        },
+        "Canada/Mountain": {
+          alias: "America/Edmonton",
+        },
+        "Canada/Newfoundland": {
+          alias: "America/St_Johns",
+        },
+        "Canada/Pacific": {
+          alias: "America/Vancouver",
+        },
+        "Canada/Saskatchewan": {
+          alias: "America/Regina",
+        },
+        "Canada/Yukon": {
+          alias: "America/Whitehorse",
+        },
+        "Chile/Continental": {
+          alias: "America/Santiago",
+        },
+        "Chile/EasterIsland": {
+          alias: "Pacific/Easter",
+        },
+        Cuba: {
+          alias: "America/Havana",
+        },
+        Egypt: {
+          alias: "Africa/Cairo",
+        },
+        Eire: {
+          alias: "Europe/Dublin",
+        },
+        "Europe/Amsterdam": {
+          regionCodes: ["NL"],
+        },
+        "Europe/Andorra": {
+          regionCodes: ["AD"],
+        },
+        "Europe/Astrakhan": {
+          regionCodes: ["RU"],
+        },
+        "Europe/Athens": {
+          regionCodes: ["GR"],
+        },
+        "Europe/Belfast": {
+          alias: "Europe/London",
+          regionCodes: ["GB"],
+        },
+        "Europe/Belgrade": {
+          regionCodes: ["RS", "BA", "HR", "ME", "MK", "SI"],
+        },
+        "Europe/Berlin": {
+          regionCodes: ["DE"],
+        },
+        "Europe/Bratislava": {
+          alias: "Europe/Prague",
+          regionCodes: ["SK"],
+        },
+        "Europe/Brussels": {
+          regionCodes: ["BE"],
+        },
+        "Europe/Bucharest": {
+          regionCodes: ["RO"],
+        },
+        "Europe/Budapest": {
+          regionCodes: ["HU"],
+        },
+        "Europe/Busingen": {
+          alias: "Europe/Zurich",
+          regionCodes: ["DE"],
+        },
+        "Europe/Chisinau": {
+          regionCodes: ["MD"],
+        },
+        "Europe/Copenhagen": {
+          regionCodes: ["DK"],
+        },
+        "Europe/Dublin": {
+          regionCodes: ["IE"],
+        },
+        "Europe/Gibraltar": {
+          regionCodes: ["GI"],
+        },
+        "Europe/Guernsey": {
+          alias: "Europe/London",
+          regionCodes: ["GG"],
+        },
+        "Europe/Helsinki": {
+          regionCodes: ["FI", "AX"],
+        },
+        "Europe/Isle_of_Man": {
+          alias: "Europe/London",
+          regionCodes: ["IM"],
+        },
+        "Europe/Istanbul": {
+          regionCodes: ["TR"],
+        },
+        "Europe/Jersey": {
+          alias: "Europe/London",
+          regionCodes: ["JE"],
+        },
+        "Europe/Kaliningrad": {
+          regionCodes: ["RU"],
+        },
+        "Europe/Kiev": {
+          regionCodes: ["UA"],
+        },
+        "Europe/Kirov": {
+          regionCodes: ["RU"],
+        },
+        "Europe/Lisbon": {
+          regionCodes: ["PT"],
+        },
+        "Europe/Ljubljana": {
+          alias: "Europe/Belgrade",
+          regionCodes: ["SI"],
+        },
+        "Europe/London": {
+          regionCodes: ["GB", "GG", "IM", "JE"],
+        },
+        "Europe/Luxembourg": {
+          regionCodes: ["LU"],
+        },
+        "Europe/Madrid": {
+          regionCodes: ["ES"],
+        },
+        "Europe/Malta": {
+          regionCodes: ["MT"],
+        },
+        "Europe/Mariehamn": {
+          alias: "Europe/Helsinki",
+          regionCodes: ["AX"],
+        },
+        "Europe/Minsk": {
+          regionCodes: ["BY"],
+        },
+        "Europe/Monaco": {
+          regionCodes: ["MC"],
+        },
+        "Europe/Moscow": {
+          regionCodes: ["RU"],
+        },
+        "Europe/Nicosia": {
+          alias: "Asia/Nicosia",
+        },
+        "Europe/Oslo": {
+          regionCodes: ["NO", "SJ", "BV"],
+        },
+        "Europe/Paris": {
+          regionCodes: ["FR"],
+        },
+        "Europe/Podgorica": {
+          alias: "Europe/Belgrade",
+          regionCodes: ["ME"],
+        },
+        "Europe/Prague": {
+          regionCodes: ["CZ", "SK"],
+        },
+        "Europe/Riga": {
+          regionCodes: ["LV"],
+        },
+        "Europe/Rome": {
+          regionCodes: ["IT", "SM", "VA"],
+        },
+        "Europe/Samara": {
+          regionCodes: ["RU"],
+        },
+        "Europe/San_Marino": {
+          alias: "Europe/Rome",
+          regionCodes: ["SM"],
+        },
+        "Europe/Sarajevo": {
+          alias: "Europe/Belgrade",
+          regionCodes: ["BA"],
+        },
+        "Europe/Saratov": {
+          regionCodes: ["RU"],
+        },
+        "Europe/Simferopol": {
+          regionCodes: ["RU", "UA"],
+        },
+        "Europe/Skopje": {
+          alias: "Europe/Belgrade",
+          regionCodes: ["MK"],
+        },
+        "Europe/Sofia": {
+          regionCodes: ["BG"],
+        },
+        "Europe/Stockholm": {
+          regionCodes: ["SE"],
+        },
+        "Europe/Tallinn": {
+          regionCodes: ["EE"],
+        },
+        "Europe/Tirane": {
+          regionCodes: ["AL"],
+        },
+        "Europe/Tiraspol": {
+          alias: "Europe/Chisinau",
+        },
+        "Europe/Ulyanovsk": {
+          regionCodes: ["RU"],
+        },
+        "Europe/Uzhgorod": {
+          regionCodes: ["UA"],
+        },
+        "Europe/Vaduz": {
+          alias: "Europe/Zurich",
+          regionCodes: ["LI"],
+        },
+        "Europe/Vatican": {
+          alias: "Europe/Rome",
+          regionCodes: ["VA"],
+        },
+        "Europe/Vienna": {
+          regionCodes: ["AT"],
+        },
+        "Europe/Vilnius": {
+          regionCodes: ["LT"],
+        },
+        "Europe/Volgograd": {
+          regionCodes: ["RU"],
+        },
+        "Europe/Warsaw": {
+          regionCodes: ["PL"],
+        },
+        "Europe/Zagreb": {
+          alias: "Europe/Belgrade",
+          regionCodes: ["HR"],
+        },
+        "Europe/Zaporozhye": {
+          regionCodes: ["UA"],
+        },
+        "Europe/Zurich": {
+          regionCodes: ["CH", "DE", "LI"],
+        },
+        GB: {
+          alias: "Europe/London",
+          regionCodes: ["GB"],
+        },
+        "GB-Eire": {
+          alias: "Europe/London",
+          regionCodes: ["GB"],
+        },
+        Hongkong: {
+          alias: "Asia/Hong_Kong",
+        },
+        Iceland: {
+          alias: "Atlantic/Reykjavik",
+        },
+        "Indian/Antananarivo": {
+          alias: "Africa/Nairobi",
+          regionCodes: ["MG"],
+        },
+        "Indian/Chagos": {
+          regionCodes: ["IO"],
+        },
+        "Indian/Christmas": {
+          regionCodes: ["CX"],
+        },
+        "Indian/Cocos": {
+          regionCodes: ["CC"],
+        },
+        "Indian/Comoro": {
+          alias: "Africa/Nairobi",
+          regionCodes: ["KM"],
+        },
+        "Indian/Kerguelen": {
+          regionCodes: ["TF", "HM"],
+        },
+        "Indian/Mahe": {
+          regionCodes: ["SC"],
+        },
+        "Indian/Maldives": {
+          regionCodes: ["MV"],
+        },
+        "Indian/Mauritius": {
+          regionCodes: ["MU"],
+        },
+        "Indian/Mayotte": {
+          alias: "Africa/Nairobi",
+          regionCodes: ["YT"],
+        },
+        "Indian/Reunion": {
+          regionCodes: ["RE", "TF"],
+        },
+        Iran: {
+          alias: "Asia/Tehran",
+        },
+        Israel: {
+          alias: "Asia/Jerusalem",
+        },
+        Jamaica: {
+          alias: "America/Jamaica",
+        },
+        Japan: {
+          alias: "Asia/Tokyo",
+        },
+        Kwajalein: {
+          alias: "Pacific/Kwajalein",
+        },
+        Libya: {
+          alias: "Africa/Tripoli",
+        },
+        "Mexico/BajaNorte": {
+          alias: "America/Tijuana",
+        },
+        "Mexico/BajaSur": {
+          alias: "America/Mazatlan",
+        },
+        "Mexico/General": {
+          alias: "America/Mexico_City",
+        },
+        NZ: {
+          alias: "Pacific/Auckland",
+          regionCodes: ["NZ"],
+        },
+        "NZ-CHAT": {
+          alias: "Pacific/Chatham",
+        },
+        Navajo: {
+          alias: "America/Denver",
+        },
+        PRC: {
+          alias: "Asia/Shanghai",
+        },
+
+        "Pacific/Apia": {
+          regionCodes: ["WS"],
+        },
+        "Pacific/Auckland": {
+          regionCodes: ["NZ", "AQ"],
+        },
+        "Pacific/Bougainville": {
+          regionCodes: ["PG"],
+        },
+        "Pacific/Chatham": {
+          regionCodes: ["NZ"],
+        },
+        "Pacific/Chuuk": {
+          regionCodes: ["FM"],
+        },
+        "Pacific/Easter": {
+          regionCodes: ["CL"],
+        },
+        "Pacific/Efate": {
+          regionCodes: ["VU"],
+        },
+        "Pacific/Enderbury": {
+          alias: "Pacific/Kanton",
+        },
+        "Pacific/Fakaofo": {
+          regionCodes: ["TK"],
+        },
+        "Pacific/Fiji": {
+          regionCodes: ["FJ"],
+        },
+        "Pacific/Funafuti": {
+          regionCodes: ["TV"],
+        },
+        "Pacific/Galapagos": {
+          regionCodes: ["EC"],
+        },
+        "Pacific/Gambier": {
+          regionCodes: ["PF"],
+        },
+        "Pacific/Guadalcanal": {
+          regionCodes: ["SB"],
+        },
+        "Pacific/Guam": {
+          regionCodes: ["GU", "MP"],
+        },
+        "Pacific/Honolulu": {
+          regionCodes: ["US", "UM"],
+        },
+        "Pacific/Johnston": {
+          alias: "Pacific/Honolulu",
+          regionCodes: ["UM"],
+        },
+        "Pacific/Kanton": {
+          regionCodes: ["KI"],
+        },
+        "Pacific/Kiritimati": {
+          regionCodes: ["KI"],
+        },
+        "Pacific/Kosrae": {
+          regionCodes: ["FM"],
+        },
+        "Pacific/Kwajalein": {
+          regionCodes: ["MH"],
+        },
+        "Pacific/Majuro": {
+          regionCodes: ["MH"],
+        },
+        "Pacific/Marquesas": {
+          regionCodes: ["PF"],
+        },
+        "Pacific/Midway": {
+          alias: "Pacific/Pago_Pago",
+          regionCodes: ["UM"],
+        },
+        "Pacific/Nauru": {
+          regionCodes: ["NR"],
+        },
+        "Pacific/Niue": {
+          regionCodes: ["NU"],
+        },
+        "Pacific/Norfolk": {
+          regionCodes: ["NF"],
+        },
+        "Pacific/Noumea": {
+          regionCodes: ["NC"],
+        },
+        "Pacific/Pago_Pago": {
+          regionCodes: ["AS", "UM"],
+        },
+        "Pacific/Palau": {
+          regionCodes: ["PW"],
+        },
+        "Pacific/Pitcairn": {
+          regionCodes: ["PN"],
+        },
+        "Pacific/Pohnpei": {
+          regionCodes: ["FM"],
+        },
+        "Pacific/Ponape": {
+          alias: "Pacific/Pohnpei",
+        },
+        "Pacific/Port_Moresby": {
+          regionCodes: ["PG", "AQ"],
+        },
+        "Pacific/Rarotonga": {
+          regionCodes: ["CK"],
+        },
+        "Pacific/Saipan": {
+          alias: "Pacific/Guam",
+          regionCodes: ["MP"],
+        },
+        "Pacific/Samoa": {
+          alias: "Pacific/Pago_Pago",
+          regionCodes: ["WS"],
+        },
+        "Pacific/Tahiti": {
+          regionCodes: ["PF"],
+        },
+        "Pacific/Tarawa": {
+          regionCodes: ["KI"],
+        },
+        "Pacific/Tongatapu": {
+          regionCodes: ["TO"],
+        },
+        "Pacific/Truk": {
+          alias: "Pacific/Chuuk",
+        },
+        "Pacific/Wake": {
+          regionCodes: ["UM"],
+        },
+        "Pacific/Wallis": {
+          regionCodes: ["WF"],
+        },
+        "Pacific/Yap": {
+          alias: "Pacific/Chuuk",
+        },
+        Poland: {
+          alias: "Europe/Warsaw",
+        },
+        Portugal: {
+          alias: "Europe/Lisbon",
+        },
+        ROC: {
+          alias: "Asia/Taipei",
+        },
+        ROK: {
+          alias: "Asia/Seoul",
+        },
+        Singapore: {
+          alias: "Asia/Singapore",
+          regionCodes: ["SG"],
+        },
+        Turkey: {
+          alias: "Europe/Istanbul",
+        },
+        "US/Alaska": {
+          alias: "America/Anchorage",
+        },
+        "US/Aleutian": {
+          alias: "America/Adak",
+        },
+        "US/Arizona": {
+          alias: "America/Phoenix",
+          regionCodes: ["US"],
+        },
+        "US/Central": {
+          alias: "America/Chicago",
+        },
+        "US/East-Indiana": {
+          alias: "America/Indiana/Indianapolis",
+        },
+        "US/Eastern": {
+          alias: "America/New_York",
+        },
+        "US/Hawaii": {
+          alias: "Pacific/Honolulu",
+          regionCodes: ["US"],
+        },
+        "US/Indiana-Starke": {
+          alias: "America/Indiana/Knox",
+        },
+        "US/Michigan": {
+          alias: "America/Detroit",
+        },
+        "US/Mountain": {
+          alias: "America/Denver",
+        },
+        "US/Pacific": {
+          alias: "America/Los_Angeles",
+        },
+        "US/Samoa": {
+          alias: "Pacific/Pago_Pago",
+          regionCodes: ["WS"],
+        },
+        "W-SU": {
+          alias: "Europe/Moscow",
+        },
+      };
+      const automaticEle = document.querySelector("#checkbox");
+      const inputEle = document.querySelector("#input");
+      const errorEle = document.querySelector(".error");
+      const timeZoneEle = document.querySelector(".timeZone");
+      let _timeZone = "";
+
+      function setTimeZone(isToggle = false) {
+        automaticEle.checked = isToggle ? automaticEle.checked : true;
+        if (automaticEle.checked) {
+          _timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          inputEle.value = _timeZone;
+        }
+      }
+
+      function checkDirty() {
+        if (inputEle.value != _timeZone) automaticEle.checked = false;
+      }
+
+      function getRegionCode() {
+        let _isDatafound = false;
+        let _regionCodeArray = [];
+        _timeZone = inputEle.value ?? "";
+        if (automaticEle.checked) {
+          _timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        }
+        let countryObj = timezonesMap[_timeZone] || null;
+        if (countryObj?.regionCodes) {
+          _regionCodeArray.push(...countryObj.regionCodes);
+          _isDatafound = true;
+        } else if (countryObj && countryObj.alias) {
+          countryObj = timezonesMap[countryObj.alias];
+          _regionCodeArray.push(...countryObj.regionCodes);
+          _isDatafound = true;
+        } else {
+          errorEle.innerText =
+            "Unable to Process, Ensure Timezone is valid and spelt Correctly";
+        }
+        if (_isDatafound) renderData(_regionCodeArray);
+      }
+      setTimeZone();
+      getRegionCode();
+
+      function renderData(regionArray) {
+        timeZoneEle.innerText = _timeZone;
+        let container = document.querySelector(".regionCodes");
+        container.innerHTML = "";
+        for (let regionCode of regionArray) {
+          let regionEle = document.createElement("p");
+          regionEle.classList.add("region");
+          regionEle.innerHTML = `${regionCode} <span>(${getCounrtyName(
+            regionCode,
+          )})</span>`;
+          container.appendChild(regionEle);
+        }
+      }
+
+      function getCounrtyName(regionCode) {
+        return countries[regionCode];
+      }
+    </script>
+  </body>
+</html>
